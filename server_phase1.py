@@ -49,3 +49,24 @@ def parse_header(data):
         "flags": flags
     }, None
 
+def start_server():
+    sock = create_socket()
+    print("TinyTelemetry Server started on port 5000\n")
+
+    while True:
+        data, addr = receive_packet(sock)
+        recv_time = datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]
+
+        header, error = parse_header(data)
+
+        if error:
+            print(f"[{recv_time}]  Malformed packet from {addr}")
+            continue
+
+        print(f"[{recv_time}] From {addr} → "
+              f"Ver={header['version']}, Type={header['msg_name']}, "
+              f"DevID={header['device_id']}, Seq={header['seq']}, "
+              f"Ts={header['timestamp']}, Flags={header['flags']}")
+
+if __name__ == "__main__":
+    start_server()
