@@ -52,13 +52,10 @@ def parse_header(data):
         "flags": flags
     }, None
 
-
-
-# ============================================
-#  SECTION 3 — Server Logic / Printing (Person C)
+# Server Logi
 #  - Calls networking + parsing
 #  - Displays decoded info
-# ============================================
+
 
 def start_server():
     sock = create_socket()
