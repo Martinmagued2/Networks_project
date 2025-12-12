@@ -75,5 +75,40 @@ def start_server(simulate_loss_rate=0.0):
             version = vmt >> 4
             msg_type = vmt & 0x0F
             payload = data[HEADER_SIZE:]
+            if msg_type == MSG_INIT:
+                # Client restarted — reset sequence counter
+                if last_seq[device_id] != -1:
+                    print(f"{Colors.BLUE}[{recv_time}] [+] Device {device_id} Re-connected. Resetting Sequence.{Colors.RESET}")
+                last_seq[device_id] = -1
 
+            # Detect batch size
+            batch_count = 0
+            if msg_type == MSG_DATA and len(payload) > 0:
+                try:
+                    obj = json.loads(payload.decode())
+                    batch_count = len(obj) if isinstance(obj, list) else 1
+                except:
+                    batch_count = 0
+
+            is_dup = 0
+
+            # Duplicate detection
+            if seq <= last_seq[device_id]:
+                is_dup = 1
+
+                # Send ACK for duplicate to stop client retries
+                ack_header = struct.pack(HEADER_FORMAT, (version << 4) | MSG_ACK,
+                                         device_id, seq, int(time.time()), 0)
+                sock.sendto(ack_header, addr)
+
+                print(f"{Colors.YELLOW}[{recv_time}] [!] DUPLICATE: Seq={seq} Dev={device_id} (Ignored){Colors.RESET}")
+
+            else:
+                # Gap detection
+                expected = last_seq[device_id] + 1
+                if last_seq[device_id] != -1 and seq > expected:
+                    gap_len = seq - expected
+                    print(f"{Colors.YELLOW}[{recv_time}] [!] GAP DETECTED: Missing {gap_len} pkts! (Exp {expected}, Got {seq}){Colors.RESET}")
+
+                last_seq[device_id] = seq
 
