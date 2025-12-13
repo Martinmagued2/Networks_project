@@ -1,5 +1,3 @@
-# perf: implement data batching and network noise simulation
-
 ##################################################################
 ##   This is the final code provided. It introduces the buffer  ##
 ## to group multiple readings into one packet (_flush_buffer).  ##
@@ -226,7 +224,7 @@ def main():
     parser.add_argument("--device", type=int, default=1001)
     parser.add_argument("--interval", type=float, default=0.5)
     parser.add_argument("--duration", type=int, default=30)
-    parser.add_argument("--batch_size", type=int, default=5, help="Max batch size")
+    parser.add_argument("--batch_size", type=int, default=3, help="Max batch size") # 3 is the max number of batches to maintain our requirements (<= 200 bytes)
     parser.add_argument("--random_batch", action="store_true", help="Vary batch size 1-N")
     parser.add_argument("--simulate_dups", type=float, default=0.0, help="Probability of sending duplicate (0.0-1.0)")
     args = parser.parse_args()
