@@ -1,10 +1,3 @@
-##################################################################
-##   This is the final code provided. It introduces the buffer  ##
-## to group multiple readings into one packet (_flush_buffer).  ##
-##   It also adds the ability to simulate network duplicates    ##
-##    (dup_rate) to test the server's deduplication logic.      ##
-##################################################################
-
 import os
 import csv
 import time
@@ -17,11 +10,13 @@ from datetime import datetime
 from argparse import ArgumentParser
 
 # --- COLORS ---
+# ANSI escape sequences for terminal colors
 RED =    "\033[91m"
 GREEN =  "\033[92m"
 YELLOW = "\033[93m"
 RESET =  "\033[0m"
 
+# Enable ANSI colors in Windows terminal
 os.system('')
 
 HEADER_FORMAT = '<B H H L B'
@@ -37,7 +32,7 @@ CLIENT_RTO = 0.5
 MAX_RETRIES = 5
 CLIENT_CSV = "client_measurements.csv"
 
-
+# Init CSV
 with open(CLIENT_CSV, "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow([
@@ -52,13 +47,24 @@ class TelemetrySensor:
         self.server_addr = (host, port)
         self.seq_num = 0
         self.socket = None
+
+        SAFE_MAX_BATCH = 3
+
+        # Check if the user tried to set a batch size larger than the limit
+        if batch_size > SAFE_MAX_BATCH:
+            # Print warning and clamp the size
+            print(
+                f"{YELLOW}Warning: Requested batch size ({batch_size}) exceeds the safe limit (3) to maintain the 200-byte packet constraint. Clamping to {SAFE_MAX_BATCH}.{RESET}")
+            batch_size = SAFE_MAX_BATCH
+
         self.max_batch_size = batch_size
         self.current_batch_limit = batch_size
+
         self.random_batch = random_batch
         self.dup_rate = dup_rate
         self.buffer = []
 
-        # If random batching is on, start with a random limit
+        # If random batching is on, start with a random limit based on the (now clamped) max_batch_size
         if self.random_batch:
             self.current_batch_limit = random.randint(1, self.max_batch_size)
 
