@@ -101,7 +101,7 @@ The data in these logs proves the system's ability to efficiently handle network
 ------------------------------------------------------------------------------------------------------------------------------------------
 
 ## File Structure
-
+```
 .
 ├── client_phase2.py        # Telemetry Sensor Client (ARQ, Batching, RTO)
 ├── server_phase2.py        # Data Server (Deduplication, Gap Detection, ACK Logic)
@@ -109,5 +109,6 @@ The data in these logs proves the system's ability to efficiently handle network
 ├── Helper.txt              # Manual test instructions and command list
 ├── .gitignore              # Ensures log files (*.csv) are ignored
 └── README.md               # Project documentation (this file)
-
+```
 ------------------------------------------------------------------------------------------------------------------------------------------
+
