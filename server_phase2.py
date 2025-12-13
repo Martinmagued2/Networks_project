@@ -112,3 +112,46 @@ def start_server(simulate_loss_rate=0.0):
 
                 last_seq[device_id] = seq
 
+                  # Send ACK
+                if msg_type in (MSG_INIT, MSG_DATA, MSG_HEARTBEAT):
+                    ack_header = struct.pack(HEADER_FORMAT, (version << 4) | MSG_ACK, device_id, seq, int(time.time()),
+                                             0)
+                    sock.sendto(ack_header, addr)
+
+            end_cpu = time.process_time()
+            cpu_ms = (end_cpu - start_cpu) * 1000
+
+            # Log
+            with open(CSV_LOG, "a", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    recv_time, addr, device_id, seq, msg_type,
+                    is_dup, len(payload), batch_count, f"{cpu_ms:.4f}"
+                ])
+
+            type_str = {0: "INIT", 1: "DATA", 2: "HEARTBEAT"}.get(msg_type, "UNK")
+
+            if not is_dup:
+                print(
+                    f"{Colors.GREEN}[{recv_time}] Seq={seq} Type={type_str} Batch={batch_count} CPU={cpu_ms:.3f}ms{Colors.RESET}")
+                if batch_count == 1 and payload:
+                    try:
+                        print(f"   Payload: {payload.decode()}")
+                    except:
+                        pass
+                elif batch_count > 1:
+                    print(f"   Payload: [Batch of {batch_count} items]")
+
+        except KeyboardInterrupt:
+            print(f"\n{Colors.YELLOW}Server stopping...{Colors.RESET}")
+            break
+        except Exception as e:
+            print(f"{Colors.RED}Error: {e}{Colors.RESET}")
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--simulate_loss", type=float, default=0.0, help="Probability of dropping packet (0.0-1.0)")
+    args = parser.parse_args()
+    start_server(simulate_loss_rate=args.simulate_loss)
+
