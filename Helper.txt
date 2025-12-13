@@ -1,0 +1,57 @@
+=========================================================================
+           TINY TELEMETRY PROTOCOL - MANUAL TEST COMMANDS
+=========================================================================
+
+=========================================================================
+INSTRUCTIONS:
+-------------
+1. Open TWO terminals (Command Prompt or PowerShell or PyCharm).
+2. Use "Terminal 1" for the [Server] and "Terminal 2" for the [Client].
+3. Run the commands below for each scenario.
+=========================================================================
+
+
+--------------------- SCENARIO 1: BASELINE TEST ---------------------
+(Goal: Show basic connectivity, no errors, sequence order 1, 2, 3...)
+
+[Terminal 1 - SERVER]
+python server_phase2.py
+
+[Terminal 2 - CLIENT]
+python client_phase2.py --interval 0.5 --duration 10 --batch_size 1
+
+
+-------------------------------------------------------------------------
+
+
+--------------- SCENARIO 2: EFFICIENCY (BATCHING) ---------------
+(Goal: Show batching logic. Client sends 5 readings in 1 packet.)
+
+[Terminal 1 - SERVER]
+python server_phase2.py
+
+[Terminal 2 - CLIENT]
+python client_phase2.py --interval 0.2 --duration 10 --batch_size 5
+-------------------------------------------------------------------------
+
+
+------------------ SCENARIO 3: PACKET LOSS & RECOVERY ------------------
+(Goal: Show Reliability. Server drops 5% of packets. Client MUST retry.)
+
+[Terminal 1 - SERVER]
+python server_phase2.py --simulate_loss 0.05
+
+[Terminal 2 - CLIENT]
+python client_phase2.py --interval 0.2 --duration 15 --batch_size 1
+-------------------------------------------------------------------------
+
+
+--------------- SCENARIO 4: STRESS TEST (THE PERFECT STORM) ---------------
+(Goal: Show everything working at once: Loss + Duplicates + Random Batches)
+
+[Terminal 1 - SERVER]
+python server_phase2.py --simulate_loss 0.05
+
+[Terminal 2 - CLIENT]
+python client_phase2.py --interval 0.2 --duration 20 --batch_size 5 --random_batch --simulate_dups 0.1
+=========================================================================
